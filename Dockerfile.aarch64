@@ -43,9 +43,9 @@ FROM ghcr.io/linuxserver/baseimage-kasmvnc:arm64v8-debianbookworm-9d98b2d5-ls120
 # these are specified in Makefile
 ARG ARCH
 ARG PLATFORM
-ARG SPARROW_VERSION
-ARG SPARROW_DEBVERSION
-ARG SPARROW_PGP_SIG
+ARG ASHIGARU_VERSION
+ARG ASHIGARU_DEBVERSION
+ARG ASHIGARU_PGP_SIG
 
 RUN \
   echo "**** install packages ****" && \
@@ -110,7 +110,7 @@ RUN \
   echo "**** xfce tweaks ****" && \
   rm -f /etc/xdg/autostart/xscreensaver.desktop && \
   # StartOS branding
-  echo "Starting Sparrow on Webtop for StartOS..." > /etc/s6-overlay/s6-rc.d/init-adduser/branding; sed -i '/run_branding() {/,/}/d' /docker-mods && \
+  echo "Starting Ashigaru Terminal on Webtop for StartOS..." > /etc/s6-overlay/s6-rc.d/init-adduser/branding; sed -i '/run_branding() {/,/}/d' /docker-mods && \
   # cleanup and remove some unneeded large binaries
   echo "**** cleanup ****" && \
   rm /kasmbins/kasm_webcam_server && \
@@ -121,24 +121,21 @@ RUN \
     /var/tmp/* \
     /tmp/*
 
-# Sparrow
+# Copy and install Ashigaru Terminal .deb package
+COPY ashigaru_terminal_*_amd64.deb /tmp/
+
+# Ashigaru Terminal
 RUN \
-  echo "**** install Sparrow ****" && \
-  # sparrow requires this directory to exist
+  echo "**** install Ashigaru Terminal ****" && \
+  # ashigaru requires this directory to exist
   mkdir -p /usr/share/desktop-directories/ && \
-  # Download and install Sparrow (todo: gpg sig verification)
-  wget --quiet https://github.com/sparrowwallet/sparrow/releases/download/${SPARROW_VERSION}/sparrowwallet_${SPARROW_DEBVERSION}_${PLATFORM}.deb \
-               https://github.com/sparrowwallet/sparrow/releases/download/${SPARROW_VERSION}/sparrow-${SPARROW_VERSION}-manifest.txt \
-               https://github.com/sparrowwallet/sparrow/releases/download/${SPARROW_VERSION}/sparrow-${SPARROW_VERSION}-manifest.txt.asc \
-               https://keybase.io/craigraw/pgp_keys.asc && \
-  # verify pgp and sha signatures
-  gpg --import pgp_keys.asc && \
-  gpg --status-fd 1 --verify sparrow-${SPARROW_VERSION}-manifest.txt.asc | grep -q "GOODSIG ${SPARROW_PGP_SIG} Craig Raw <craig@sparrowwallet.com>" || exit 1 && \
-  sha256sum --check sparrow-${SPARROW_VERSION}-manifest.txt --ignore-missing || exit 1 && \
+  # Find and install the Ashigaru Terminal .deb package (Note: currently only amd64 available)
+  DEB_FILE=$(ls /tmp/ashigaru_terminal_*_amd64.deb | head -1) && \
+  echo "Installing Ashigaru Terminal from: $DEB_FILE" && \
   DEBIAN_FRONTEND=noninteractive \
-  apt-get install -y ./sparrowwallet_${SPARROW_DEBVERSION}_${PLATFORM}.deb && \
+  apt-get install -y "$DEB_FILE" && \
   # cleanup
-  rm ./sparrow* ./pgp_keys.asc
+  rm /tmp/ashigaru_terminal_*_amd64.deb
 
 # start from scratch so we create smaller layers in the resulting image
 FROM scratch

@@ -6,12 +6,12 @@ const shape = object({
   username: string,
   password: string.optional(),
   reconnect: boolean.onMismatch(false),
-  sparrow: object({
+  ashigaruterminal: object({
     managesettings: boolean,
     server: object({
       type: oneOf(
+        literal('fulcrum'),
         literal('electrs'),
-        literal('bitcoind'),
         literal('public'),
       ).onMismatch('electrs'),
       user: string,
@@ -34,32 +34,24 @@ export const createDefaultStore = async (effects: T.Effects) => {
   // check if the file exists (from previous installs or upgrades)
   const conf = await store.read().once()
   if (conf) {
-    console.log('Sparrow config file already exists, clearing RPC credentials')
-    await store.merge(effects, {
-      sparrow: {
-        server: {
-          user: '',
-          password: '',
-        },
-      },
-    })
+    console.log('Ashigaru Terminal config file already exists')
     return
   }
 
   // config file does not exist, create it
-  console.log('Sparrow config file does not exist, creating it')
+  console.log('Ashigaru Terminal config file does not exist, creating it')
   const installedPackages = await effects.getInstalledPackages()
-  const serverType = installedPackages.includes('electrs')
-    ? 'electrs'
-    : installedPackages.includes('bitcoind')
-      ? 'bitcoind'
+  const serverType = installedPackages.includes('fulcrum')
+    ? 'fulcrum'
+    : installedPackages.includes('electrs')
+      ? 'electrs'
       : 'public'
 
   await store.write(effects, {
-    title: 'Sparrow on StartOS',
-    username: 'webtop',
+    title: 'Ashigaru Terminal',
+    username: 'ashigaru',
     reconnect: false,
-    sparrow: {
+    ashigaruterminal: {
       managesettings: true,
       server: {
         type: serverType,

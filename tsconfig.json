@@ -1,11 +1,14 @@
 {
-  "include": ["startos/**/*.ts", "node_modules/**/startos"],
+  "include": ["startos/**/*.ts"],
+  "exclude": ["ashigaru-terminal-webtop-startos/**/*"],
   "compilerOptions": {
-    "target": "ES2018",
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "esModuleInterop": true,
+    "target": "ES2020",
+    "lib": ["ES2020"],
+    "module": "commonjs",
     "strict": true,
-    "skipLibCheck": true
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true
   }
 }

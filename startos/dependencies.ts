@@ -4,12 +4,22 @@ import { sdk } from './sdk'
 export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
   const conf = await store.read().const(effects)
 
-  // no dependencies if we are not managing sparrow settings
-  if (!conf?.sparrow.managesettings) {
+  // no dependencies if we are not managing ashigaru terminal settings
+  if (!conf?.ashigaruterminal.managesettings) {
     return {}
   }
 
-  var serverType = conf.sparrow.server.type
+  var serverType = conf.ashigaruterminal.server.type
+
+  if (serverType == 'fulcrum') {
+    return {
+      fulcrum: {
+        kind: 'exists',
+        // @todo update version range
+        versionRange: '>=1.11.1:0',
+      },
+    }
+  }
 
   if (serverType == 'electrs') {
     return {
@@ -17,16 +27,6 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
         kind: 'exists',
         // @todo update version range
         versionRange: '>=0.10.9:1-alpha.1',
-      },
-    }
-  }
-
-  if (serverType == 'bitcoind') {
-    return {
-      bitcoind: {
-        kind: 'exists',
-        // @todo update version range
-        versionRange: '>=28.1:3-alpha.4',
       },
     }
   }

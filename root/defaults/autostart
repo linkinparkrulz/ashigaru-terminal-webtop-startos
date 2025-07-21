@@ -1,4 +1,90 @@
 # run a compositor to get transparency effects
 compton -b
 
-dbus-launch /opt/sparrowwallet/bin/Sparrow
+# Create log directory
+mkdir -p /config/logs
+
+# Start Ashigaru Terminal with proper executable detection
+(
+    echo "$(date): Starting Ashigaru Terminal..." >> /config/logs/startup.log
+    
+    # Wait a moment for the desktop to be ready
+    sleep 3
+    
+    # Try to find the Ashigaru Terminal executable
+    ASHIGARU_EXEC=""
+    
+    # Check common installation paths (in order of preference)
+    if [ -f "/opt/ashigaru-terminal/bin/ashigaru-terminal" ]; then
+        ASHIGARU_EXEC="/opt/ashigaru-terminal/bin/ashigaru-terminal"
+        echo "Found standard launcher: $ASHIGARU_EXEC" >> /config/logs/startup.log
+    elif [ -f "/opt/ashigaru-terminal/Ashigaru" ]; then
+        ASHIGARU_EXEC="/opt/ashigaru-terminal/Ashigaru"
+        echo "Found direct executable: $ASHIGARU_EXEC" >> /config/logs/startup.log
+    elif [ -f "/opt/Ashigaru/bin/Ashigaru" ]; then
+        ASHIGARU_EXEC="/opt/Ashigaru/bin/Ashigaru"
+        echo "Found Ashigaru in capitalized directory: $ASHIGARU_EXEC" >> /config/logs/startup.log
+    elif [ -f "/usr/bin/ashigaru-terminal" ]; then
+        ASHIGARU_EXEC="/usr/bin/ashigaru-terminal"
+        echo "Found system-wide installation: $ASHIGARU_EXEC" >> /config/logs/startup.log
+    elif [ -f "/usr/local/bin/ashigaru-terminal" ]; then
+        ASHIGARU_EXEC="/usr/local/bin/ashigaru-terminal"
+        echo "Found local installation: $ASHIGARU_EXEC" >> /config/logs/startup.log
+    else
+        # Fallback: search for any ashigaru executable
+        ASHIGARU_EXEC=$(find /opt /usr/bin /usr/local/bin -name "*ashigaru*" -type f -executable 2>/dev/null | head -1)
+        if [ -n "$ASHIGARU_EXEC" ]; then
+            echo "Found executable via search: $ASHIGARU_EXEC" >> /config/logs/startup.log
+        else
+            ASHIGARU_EXEC=$(find /opt /usr/bin /usr/local/bin -name "*Ashigaru*" -type f -executable 2>/dev/null | head -1)
+            if [ -n "$ASHIGARU_EXEC" ]; then
+                echo "Found executable via case-sensitive search: $ASHIGARU_EXEC" >> /config/logs/startup.log
+            fi
+        fi
+    fi
+    
+    # Check if we found an executable
+    if [ -z "$ASHIGARU_EXEC" ]; then
+        echo "ERROR: No Ashigaru Terminal executable found!" >> /config/logs/startup.log
+        echo "Searching entire system for Ashigaru files..." >> /config/logs/startup.log
+        find / -name "*ashigaru*" -o -name "*Ashigaru*" 2>/dev/null | head -20 >> /config/logs/startup.log
+        exit 1
+    fi
+    
+    # Verify the executable exists and is executable
+    if [ ! -f "$ASHIGARU_EXEC" ]; then
+        echo "ERROR: Executable not found: $ASHIGARU_EXEC" >> /config/logs/startup.log
+        exit 1
+    fi
+    
+    if [ ! -x "$ASHIGARU_EXEC" ]; then
+        echo "ERROR: File is not executable: $ASHIGARU_EXEC" >> /config/logs/startup.log
+        ls -la "$ASHIGARU_EXEC" >> /config/logs/startup.log
+        exit 1
+    fi
+    
+    # Start the application
+    echo "$(date): Executing: $ASHIGARU_EXEC" >> /config/logs/startup.log
+    cd /config
+    
+    # Launch Ashigaru Terminal with full logging
+    "$ASHIGARU_EXEC" >> /config/logs/ashigaru.log 2>&1 &
+    ASHIGARU_PID=$!
+    
+    echo "$(date): Ashigaru Terminal started with PID $ASHIGARU_PID" >> /config/logs/startup.log
+    
+    # Monitor the process briefly to ensure it started successfully
+    sleep 5
+    if kill -0 $ASHIGARU_PID 2>/dev/null; then
+        echo "$(date): Process is running successfully" >> /config/logs/startup.log
+    else
+        echo "$(date): WARNING: Process appears to have exited" >> /config/logs/startup.log
+        echo "Checking process exit status..." >> /config/logs/startup.log
+        wait $ASHIGARU_PID
+        EXIT_CODE=$?
+        echo "Process exited with code: $EXIT_CODE" >> /config/logs/startup.log
+        if [ $EXIT_CODE -ne 0 ]; then
+            echo "Application crashed or failed to start. Check ashigaru.log for details." >> /config/logs/startup.log
+        fi
+    fi
+) &

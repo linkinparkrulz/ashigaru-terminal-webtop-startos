@@ -2,9 +2,11 @@
   <img src="icon.png" alt="Project Logo" width="21%">
 </p>
 
-# Sparrow on Webtop for StartOS
+# Ashigaru Terminal on Webtop for StartOS
 
-[Webtop](https://docs.linuxserver.io/images/docker-webtop/) is an innovative Linux desktop environment that allows users to access a complete Linux desktop directly from their web browser. This repository creates the `s9pk` package that is installed to run the [Sparrow desktop wallet](https://sparrowwallet.com/) on a stripped down version of `Webtop` on [StartOS](https://github.com/Start9Labs/start-os/). Learn more about service packaging in the [Developer Docs](https://start9.com/latest/developer-docs/).
+[Webtop](https://docs.linuxserver.io/images/docker-webtop/) is an innovative Linux desktop environment that allows users to access a complete Linux desktop directly from their web browser. This repository creates the `s9pk` package that is installed to run the [Ashigaru Terminal wallet](https://github.com/linkinparkrulz/ashigaru-terminal) on a stripped down version of `Webtop` on [StartOS](https://github.com/Start9Labs/start-os/). 
+
+Ashigaru Terminal is a privacy-enhanced Bitcoin wallet forked from Sparrow v1.8.4, featuring enhanced privacy capabilities with Nightjar integration and additional privacy-focused functionality. Learn more about service packaging in the [Developer Docs](https://start9.com/latest/developer-docs/).
 
 ## Dependencies
 
@@ -22,13 +24,13 @@ Install the system dependencies below to build this project by following the ins
 Clone the Webtop package repository locally.
 
 ```
-git clone git@github.com:remcoros/sparrow-webtop-startos.git
-cd sparrow-webtop-startos
+git clone git@github.com:linkinparkrulz/ashigaru-webtop-startos.git
+cd ashigaru-webtop-startos
 ```
 
 ## Building
 
-To build the **Sparrow** service as a universal package, run the following command:
+To build the **Ashigaru Terminal** service as a universal package, run the following command:
 
 ```
 make
@@ -58,10 +60,10 @@ start-cli auth login
 make install
 ```
 
-**Tip:** You can also install the sparrow-webtop.s9pk by sideloading it under the **StartOS > System > Sideload a Service** section.
+**Tip:** You can also install the ashigaru-webtop.s9pk by sideloading it under the **StartOS > System > Sideload a Service** section.
 
 ## Verify Install
 
-Go to your StartOS Services page, select **Sparrow**, configure and start the service.
+Go to your StartOS Services page, select **Ashigaru Terminal**, configure and start the service.
 
 **Done!**

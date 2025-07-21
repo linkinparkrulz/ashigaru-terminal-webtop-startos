@@ -1,9 +1,9 @@
 import { setupManifest } from '@start9labs/start-sdk'
 import { SDKImageInputSpec } from '@start9labs/start-sdk/base/lib/types/ManifestTypes'
 
-const SPARROW_VERSION = '2.2.3'
-const SPARROW_DEBVERSION = '2.2.3-1'
-const SPARROW_PGP_SIG = 'E94618334C674B40'
+const ASHIGARU_VERSION = '1.0.0:0'
+const ASHIGARU_DEBVERSION = '1.0.0'
+const ASHIGARU_PGP_SIG = '' // No PGP verification for Ashigaru (using local .deb)
 
 // the following allows us to build the service for x86 or arm64 specifically
 // use: 'make x86' or 'make arm' ('make' will build both)
@@ -13,9 +13,9 @@ const BUILD = process.env.BUILD || ''
 // the subcontainer (in main.ts), is this correct?
 
 const defaultBuildArgs = {
-  SPARROW_VERSION: SPARROW_VERSION,
-  SPARROW_DEBVERSION: SPARROW_DEBVERSION,
-  SPARROW_PGP_SIG: SPARROW_PGP_SIG,
+  ASHIGARU_VERSION: ASHIGARU_VERSION,
+  ASHIGARU_DEBVERSION: ASHIGARU_DEBVERSION,
+  ASHIGARU_PGP_SIG: ASHIGARU_PGP_SIG,
 }
 
 const main_x64: SDKImageInputSpec = {
@@ -46,26 +46,21 @@ const main_aarch64: SDKImageInputSpec = {
   },
 }
 
-// @todo name of images cannot contain capital letters, underscores, numbers?
-const images: Record<string, SDKImageInputSpec> =
-  BUILD === 'x86'
-    ? { 'main': main_x64 }
-    : BUILD === 'arm'
-      ? { 'main-aarch': main_aarch64 }
-      : { 'main': main_x64, 'main-aarch': main_aarch64 }
+// Currently only x86_64 supported (only amd64 .deb available for Ashigaru Terminal)
+const images: Record<string, SDKImageInputSpec> = { 'main': main_x64 }
 
 export const manifest = setupManifest({
-  id: 'sparrow-webtop',
-  title: 'Sparrow',
+  id: 'ashigaru-webtop',
+  title: 'Ashigaru Terminal',
   license: 'GPLv3',
-  wrapperRepo: 'https://github.com/remcoros/sparrow-webtop-startos',
-  upstreamRepo: 'https://github.com/sparrowwallet/sparrow',
-  supportSite: 'https://github.com/sparrowwallet/sparrow/issues',
-  marketingSite: 'https://sparrowwallet.com/',
-  donationUrl: 'https://sparrowwallet.com/donate/',
+  wrapperRepo: 'https://github.com/linkinparkrulz/ashigaru-webtop-startos',
+  upstreamRepo: 'http://ashicodepbnpvslzsl2bz7l2pwrjvajgumgac423pp3y2deprbnzz7id.onion/Ashigaru',
+  supportSite: 'https://github.com/linkinparkrulz/ashigaru-webtop-startos/issues',
+  marketingSite: 'https://ashigaru.rs',
+  donationUrl: 'https://geyser.fund/project/ashigarufund',
   description: {
-    short: 'Sparrow - Desktop Wallet In Your Browser',
-    long: "Sparrow on Webtop is a stripped down version of 'Webtop' (a Linux Desktop Environment) running the Sparrow wallet.\nThis allows users to access a simple Linux desktop with Sparrow pre-installed directly from their web browser.",
+    short: 'Ashigaru Terminal - A non-custodial, dedicated Ashigaru Whirlpool client',
+    long: "Ashigaru Terminal on Webtop is a stripped down version of 'Webtop' (a Linux Desktop Environment) running the Ashigaru Terminal.\nAshigaru Terminal is a non-custodial, dedicated Ashigaru Whirlpool client which allows users to enter pools of their choice and continue to build their forward and backwards anonymity sets whilst being in full control of their funds during every stage of coinjoin cycles.",
   },
   volumes: ['main', 'userdir'],
   images: images,
@@ -81,13 +76,13 @@ export const manifest = setupManifest({
     stop: null,
   },
   dependencies: {
-    bitcoind: {
-      description: 'Used to connect to your Bitcoin node.',
+    fulcrum: {
+      description: 'Used to connect to your fulcrum electrum server for enhanced privacy.',
       optional: true,
       s9pk: null,
     },
     electrs: {
-      description: 'Used to connect to your Bitcoin node.',
+      description: 'Used to connect to your electrs electrum server for enhanced privacy.',
       optional: true,
       s9pk: null,
     },

@@ -11,15 +11,15 @@ export const inputSpec = InputSpec.of({
     description:
       'This value will be displayed as the title of your browser tab.',
     required: true,
-    default: 'Sparrow on StartOS',
-    placeholder: 'Sparrow on StartOS',
+    default: 'Ashigaru Terminal',
+    placeholder: 'Ashigaru Terminal',
     patterns: [utils.Patterns.ascii],
   }),
   username: Value.text({
     name: 'Username',
     description: 'The username for logging into your Webtop.',
     required: true,
-    default: 'webtop',
+    default: 'ashigaru',
     placeholder: '',
     masked: false,
     patterns: [utils.Patterns.ascii],
@@ -43,28 +43,28 @@ export const inputSpec = InputSpec.of({
       'Automatically reconnect when the connection to the desktop is lost or the browser tab has been idle for too long.',
     default: false,
   }),
-  sparrow: Value.object(
+  ashigaruterminal: Value.object(
     {
-      name: 'Sparrow settings',
-      description: 'Sparrow settings',
+      name: 'Ashigaru Terminal settings',
+      description: 'Ashigaru Terminal settings',
     },
     InputSpec.of({
       managesettings: Value.toggle({
         name: 'Apply settings on startup',
         description:
-          'Disable to manage your own server and proxy settings in Sparrow',
+          'Disable to manage your own server and proxy settings in Ashigaru Terminal',
         default: true,
       }),
       server: Value.dynamicUnion(async ({ effects }) => {
         // determine default server type and disabled options
         const installedPackages = await effects.getInstalledPackages()
-        let serverType: 'electrs' | 'bitcoind' | 'public' = 'public'
+        let serverType: 'fulcrum' | 'electrs' | 'public' = 'public'
         let disabled: string[] = []
 
-        if (installedPackages.includes('bitcoind')) {
-          serverType = 'bitcoind'
+        if (installedPackages.includes('fulcrum')) {
+          serverType = 'fulcrum'
         } else {
-          disabled.push('bitcoind')
+          disabled.push('fulcrum')
         }
 
         if (installedPackages.includes('electrs')) {
@@ -75,16 +75,16 @@ export const inputSpec = InputSpec.of({
 
         return {
           name: 'Server',
-          description: 'Bitcoin/Electrum Server',
+          description: 'Electrum Server',
           default: serverType,
           disabled: disabled,
           variants: Variants.of({
-            electrs: {
-              name: 'Electrs (recommended)' + (disabled.includes('electrs') ? ' (not installed)' : ''),
+            fulcrum: {
+              name: 'Fulcrum' + (disabled.includes('fulcrum') ? ' (not installed)' : ''),
               spec: InputSpec.of({}),
             },
-            bitcoind: {
-              name: 'Local Bitcoin Node' + (disabled.includes('bitcoind') ? ' (not installed)' : ''),
+            electrs: {
+              name: 'Electrs' + (disabled.includes('electrs') ? ' (not installed)' : ''),
               spec: InputSpec.of({}),
             },
             public: {
@@ -152,13 +152,13 @@ async function readSettings(effects: T.Effects): Promise<PartialInputSpec> {
     username: settings.username,
     password: settings.password,
     reconnect: settings.reconnect,
-    sparrow: {
-      managesettings: settings.sparrow.managesettings,
+    ashigaruterminal: {
+      managesettings: settings.ashigaruterminal.managesettings,
       server: {
-        selection: settings.sparrow.server.type,
+        selection: settings.ashigaruterminal.server.type,
       },
       proxy: {
-        selection: settings.sparrow.proxy.type,
+        selection: settings.ashigaruterminal.proxy.type,
       },
     },
   }
@@ -166,43 +166,24 @@ async function readSettings(effects: T.Effects): Promise<PartialInputSpec> {
 
 async function writeSettings(effects: T.Effects, input: InputSpec) {
   if (
-    input.sparrow.managesettings &&
-    input.sparrow.server.selection == 'public'
+    input.ashigaruterminal.managesettings &&
+    input.ashigaruterminal.server.selection == 'public'
   ) {
     console.log('using public electrum server')
-
-    // @todo this does not work (request config action from config action)
-    // await sdk.action.requestOwn(effects, config, 'important', {
-    //   reason: 'Change settings to not use a public electrum server',
-    // })
   }
 
-  await sdk.action.clearTask(effects, 'reset-rpc-auth')
+  if (
+    input.ashigaruterminal.managesettings &&
+    input.ashigaruterminal.server.selection == 'fulcrum'
+  ) {
+    console.log('using local fulcrum server')
+  }
 
   if (
-    input.sparrow.managesettings &&
-    input.sparrow.server.selection == 'bitcoind'
+    input.ashigaruterminal.managesettings &&
+    input.ashigaruterminal.server.selection == 'electrs'
   ) {
-    console.log('using bitcoind server')
-
-    const currentConf = await store.read().once()
-    // check if we need to request new credentials
-    if (
-      !currentConf?.sparrow.server.user ||
-      !currentConf?.sparrow.server.password
-    ) {
-      console.log('resetting rpc credentials')
-
-      await sdk.action.run({
-        actionId: 'reset-rpc-auth',
-        effects,
-        input: {},
-      })
-    } else {
-      //await sdk.action.clearRequest(effects, 'reset-rpc-auth')
-    }
-  } else {
-    //await sdk.action.clearRequest(effects, 'reset-rpc-auth')
+    console.log('using local electrs server')
   }
 
   await store.merge(effects, {
@@ -210,13 +191,13 @@ async function writeSettings(effects: T.Effects, input: InputSpec) {
     username: input.username,
     password: input.password,
     reconnect: input.reconnect,
-    sparrow: {
-      managesettings: input.sparrow.managesettings,
+    ashigaruterminal: {
+      managesettings: input.ashigaruterminal.managesettings,
       server: {
-        type: input.sparrow.server.selection,
+        type: input.ashigaruterminal.server.selection,
       },
       proxy: {
-        type: input.sparrow.proxy.selection,
+        type: input.ashigaruterminal.proxy.selection,
       },
     },
   })
