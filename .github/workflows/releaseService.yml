@@ -29,8 +29,8 @@ jobs:
         run: |
           PACKAGE_ID=$(start-cli s9pk inspect *.s9pk manifest | jq -r '.id')
           PACKAGE_TITLE=$(start-cli s9pk inspect *.s9pk manifest | jq -r '.title')
-          echo "package_id=${PACKAGE_ID}" >> $GITHUB_ENV
-          echo "package_title=${PACKAGE_TITLE}" >> $GITHUB_ENV
+          echo "PACKAGE_ID=${PACKAGE_ID}" >> $GITHUB_ENV
+          echo "PACKAGE_TITLE=${PACKAGE_TITLE}" >> $GITHUB_ENV
           printf "\n SHA256SUM: $(sha256sum ${PACKAGE_ID}.s9pk) \n"
         shell: bash
 
@@ -49,7 +49,7 @@ jobs:
 
           echo "## SHA256 Hash" >> change-log.txt
           echo '```' >> change-log.txt
-          sha256sum ${{ env.package_id }}.s9pk >> change-log.txt
+          sha256sum ${{ env.PACKAGE_ID }}.s9pk >> change-log.txt
           echo '```' >> change-log.txt
         shell: bash
 
@@ -57,12 +57,12 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: ${{ env.package_title }} ${{ github.ref_name }}
+          name: ${{ env.PACKAGE_TITLE }} ${{ github.ref_name }}
           prerelease: true
           body_path: change-log.txt
           files: |
-            ./${{ env.package_id }}.s9pk
-            ./${{ env.package_id }}.s9pk.sha256
+            ./${{ env.PACKAGE_ID }}.s9pk
+            ./${{ env.PACKAGE_ID }}.s9pk.sha256
 
       - name: Publish to Registry
         env:
@@ -73,5 +73,5 @@ jobs:
           if [[ -z "$S9USER" || -z "$S9PASS" || -z "$S9REGISTRY" ]]; then
             echo "Publish skipped: missing registry credentials."
           else
-            start-cli registry package add ${{ env.package_id }}.s9pk https://$S9USER:$S9PASS@$S9REGISTRY
+            start-cli registry package add ${{ env.PACKAGE_ID }}.s9pk https://$S9USER:$S9PASS@$S9REGISTRY
           fi
