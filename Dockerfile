@@ -1,6 +1,6 @@
 # taken from https://github.com/linuxserver/docker-baseimage-kasmvnc/blob/debianbookworm/Dockerfile
 # modified to apply 'novnc.patch' (fixing a disconnect/reconnect issue)
-FROM node:18-bookworm AS wwwstage
+FROM node:14-bullseye AS wwwstage
 
 ARG KASMWEB_RELEASE="46412d23aff1f45dffa83fafb04a683282c8db58"
 
@@ -18,7 +18,7 @@ RUN \
   echo "apply novnc.patch" && \
   cd /src && \
   patch -p1 -i novnc.patch && \
-  npm install && \
+  npm install --legacy-peer-deps && \
   npm run-script build
 
 RUN \
