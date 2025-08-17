@@ -1,6 +1,6 @@
 # taken from https://github.com/linuxserver/docker-baseimage-kasmvnc/blob/debianbookworm/Dockerfile
 # modified to apply 'novnc.patch' (fixing a disconnect/reconnect issue)
-FROM node:12-buster AS wwwstage
+FROM node:18-bookworm AS wwwstage
 
 ARG KASMWEB_RELEASE="46412d23aff1f45dffa83fafb04a683282c8db58"
 

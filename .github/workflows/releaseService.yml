@@ -73,5 +73,5 @@ jobs:
           if [[ -z "$S9USER" || -z "$S9PASS" || -z "$S9REGISTRY" ]]; then
             echo "Publish skipped: missing registry credentials."
           else
-            start-sdk publish https://$S9USER:$S9PASS@$S9REGISTRY ${{ env.package_id }}.s9pk
+            start-cli registry package add ${{ env.package_id }}.s9pk https://$S9USER:$S9PASS@$S9REGISTRY
           fi
